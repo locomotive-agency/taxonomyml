@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "taxonomyml"
+version = "0.1.0"
+description = "Develop high-level website taxonomies from Search Console data or CSV files."
+license = "MIT"
+authors = ["JR Oakes <jroakes@gmail.com>"]
+homepage = "https://locomotive.agency/"
+repository = "https://github.com/jroakes/Taxonomy"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.11"
+sentence-transformers = "^2.2.2"
+loguru = "^0.7.0"
+openai = "^0.27.8"
+numpy = ">=1.18,<1.25"
+scikit-learn = "1.2.2"
+nltk = "^3.8.1"
+kneed = "^0.8.5"
+pandas = "^2.0.3"
+searchconsole = {git = "https://github.com/joshcarty/google-searchconsole"}
+google-api-python-client = "^2.93.0"
+python-dotenv = "^1.0.0"
+hdbscan = "^0.8.30"
+tiktoken = "^0.4.0"
+llvmlite = "0.40.1"
+umap-learn = "^0.5.3"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
