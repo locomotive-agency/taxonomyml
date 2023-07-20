@@ -32,6 +32,7 @@ pre-commit = "^3.3.3"
 ruff = "^0.0.278"
 
 [tool.ruff]
+select = ["E", "F", "I", "N", "C90"]
 ignore = ["E501"]
 
 [build-system]
