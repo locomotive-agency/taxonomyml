@@ -3,16 +3,13 @@
 import re
 from typing import Union
 
-from google.oauth2 import service_account
-from apiclient import discovery
-
 import pandas as pd
-from searchconsole.account import Account
+from apiclient import discovery
+from google.oauth2 import service_account
 from loguru import logger
+from searchconsole.account import Account
 
-
-import settings
-
+from taxonomyml import settings
 
 credentials = service_account.Credentials.from_service_account_file(
     settings.SERVICE_ACCOUNT_CREDENTIALS,
@@ -58,7 +55,7 @@ def load_gsc_account_data(property: str, days: int) -> Union[None, pd.DataFrame]
         logger.info("Dataframe created.")
         return df
 
-    except Exception as e:
+    except Exception:
         logger.error(f"There was an error loading the data for {property}.")
         return None
 

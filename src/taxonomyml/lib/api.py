@@ -1,25 +1,21 @@
 """API functions for the app."""
 from __future__ import annotations
 
-from typing import List, Union
 import concurrent.futures
+from typing import List, Union
+
 import numpy as np
-
 import openai
-
-from tqdm import tqdm
-import settings
 from loguru import logger
-
-
 from tenacity import (
-    retry,
     RetryError,
+    retry,
     stop_after_attempt,
     wait_random_exponential,
 )
+from tqdm import tqdm
 
-import settings
+from taxonomyml import settings
 
 # Set OpenAI API key
 openai.api_key = settings.OPENAI_API_KEY

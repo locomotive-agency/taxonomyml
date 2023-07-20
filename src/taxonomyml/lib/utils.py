@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-import re
-import os
 import glob
-from typing import List
-from itertools import product
 import logging
+import os
+import re
+from itertools import product
+from typing import List
+
 from loguru import logger
 
 

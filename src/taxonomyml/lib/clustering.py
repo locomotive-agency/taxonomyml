@@ -3,41 +3,34 @@
 
 """Create clustering model using HDBScan and AgglomerativeClustering models with embeddings"""
 
-import os
-import math
-from tqdm import tqdm
-from typing import List, Union
 import concurrent.futures
-from sentence_transformers import SentenceTransformer
-from sentence_transformers import CrossEncoder
-import torch
-
-from sklearn.metrics import silhouette_samples
-from sklearn.neighbors import NearestNeighbors
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-from kneed import KneeLocator
+import math
+import os
 import warnings
-from numba.core.errors import NumbaDeprecationWarning
+from typing import List, Union
 
-warnings.filterwarnings("ignore", category=NumbaDeprecationWarning)
-
-import umap.umap_ as umap
-
-from sklearn.cluster import AgglomerativeClustering
-from sklearn.cluster import OPTICS
-from hdbscan import HDBSCAN
 import numpy as np
 import pandas as pd
-
+import torch
+import umap.umap_ as umap
+from hdbscan import HDBSCAN
+from kneed import KneeLocator
 from loguru import logger
-from lib.api import get_openai_embeddings
-from lib.prompts import PROMPT_TEMPLATE_CLUSTER
-from lib.api import get_openai_response_chat
-from lib.ctfidf import ClassTfidfTransformer
-import settings
+from numba.core.errors import NumbaDeprecationWarning
+from sentence_transformers import CrossEncoder, SentenceTransformer
+from sklearn.cluster import OPTICS, AgglomerativeClustering
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics import silhouette_samples
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.neighbors import NearestNeighbors
+from tqdm import tqdm
 
+from taxonomyml import settings
+from taxonomyml.lib.api import get_openai_embeddings, get_openai_response_chat
+from taxonomyml.lib.ctfidf import ClassTfidfTransformer
+from taxonomyml.lib.prompts import PROMPT_TEMPLATE_CLUSTER
 
+warnings.filterwarnings("ignore", category=NumbaDeprecationWarning)
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
@@ -247,7 +240,7 @@ class ClusterTopics:
         """Returns ngrams by cluster using tfidf and cosine similarity."""
 
         vocabulary = list(set(self.corpus))
-        labels = np.sort(np.unique([l for l in self.labels if l > -1]))
+        labels = np.sort(np.unique([label for label in self.labels if label > -1]))
         results = []
 
         try:
@@ -267,11 +260,11 @@ class ClusterTopics:
                 idx = np.where(self.labels == label)[0]
                 docs.append(" ".join(self.corpus[idx]))
 
-            X1 = vectorizer.fit_transform(docs)
-            X2 = c_vectorizer.fit(X1).transform(X1)
+            x1 = vectorizer.fit_transform(docs)
+            x2 = c_vectorizer.fit(x1).transform(x1)
 
             for ldx, label in enumerate(labels):
-                tfidf_scores = X2[ldx].toarray().flatten()
+                tfidf_scores = x2[ldx].toarray().flatten()
                 df = pd.DataFrame(
                     list(zip(feature_names, tfidf_scores)),
                     columns=["feature", "tfidf_score"],
@@ -429,7 +422,10 @@ class ClusterTopics:
         neigh = NearestNeighbors(n_neighbors=1)
         neigh.fit(centroids)
         assigned_idx = neigh.kneighbors(outlier_embeddings)[1].flatten()
-        map_to_label = lambda x: labels[x]
+
+        def map_to_label(x):
+            return labels[x]
+
         assigned = map_to_label(assigned_idx)
 
         if len(np.unique(assigned)) > 1:
@@ -450,10 +446,9 @@ class ClusterTopics:
         outliers_idx = np.where(self.labels == -1)[0]
         model = self.get_cluster_model(model_name="agglomerative")
         labels_idx = model.fit(self.model_data[outliers_idx]).labels_
-        n = self.labels.max() + 1
-        labels_idx = np.array([l + n for l in labels_idx])
+        offset = self.labels.max() + 1
+        labels_idx = np.array([idx + offset for idx in labels_idx])
         self.labels[outliers_idx] = labels_idx
-
 
     def fit_pairwise_crossencoded(
         self,
@@ -463,12 +458,12 @@ class ClusterTopics:
         similarity_percentile: int = 40,
     ) -> tuple:
         """Fits the model first pairwise using cosine_similarity and then using cross-encoder to top n categories
-        
+
         Args:
             corpus (List[str]): A list of sentences to cluster.
             categories (Union[List[str], None], optional): A list of categories to use for clustering. Defaults to None.
             top_n (int, optional): The number of categories to cross-encode. Defaults to 5.
-            
+
         Returns:
             tuple: A tuple of the cluster labels and text labels.
         """
@@ -490,7 +485,9 @@ class ClusterTopics:
         category_embeddings = self.get_embeddings(self.cluster_categories)
 
         embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
-        category_embeddings = category_embeddings / np.linalg.norm(category_embeddings, axis=1, keepdims=True)
+        category_embeddings = category_embeddings / np.linalg.norm(
+            category_embeddings, axis=1, keepdims=True
+        )
 
         logger.info("Getting pairwise cosine similarity.")
         cosine_similarity_matrix = cosine_similarity(embeddings, category_embeddings)
@@ -499,7 +496,10 @@ class ClusterTopics:
         cross_encoder = CrossEncoder(settings.CROSSENCODER_MODEL_NAME)
 
         top_n_categories = [
-            [self.cluster_categories[x] for x in np.argsort(cosine_similarity_matrix[i])[-top_n:][::-1]]
+            [
+                self.cluster_categories[x]
+                for x in np.argsort(cosine_similarity_matrix[i])[-top_n:][::-1]
+            ]
             for i in range(len(corpus_array))
         ]
 
@@ -510,7 +510,9 @@ class ClusterTopics:
 
         cross_encoder_similarity = [
             cross_encoder.predict(pairs)
-            for pairs in tqdm(cross_encoder_pairs, desc="Getting cross-encoder similarity")
+            for pairs in tqdm(
+                cross_encoder_pairs, desc="Getting cross-encoder similarity"
+            )
         ]
 
         unique_similarities = np.unique(np.array(cross_encoder_similarity).flatten())
@@ -521,7 +523,7 @@ class ClusterTopics:
             argmax_similarities = np.argmax(similarities)
             if max(similarities) < similarity_threshold:
                 labels.append(-1)
-                text_labels.append('<outlier>')
+                text_labels.append("<outlier>")
             else:
                 labels.append(argmax_similarities)
                 text_labels.append(top_n_categories[i][argmax_similarities])
@@ -530,8 +532,6 @@ class ClusterTopics:
         self.text_labels = text_labels
 
         return (self.labels, self.text_labels)
-
-
 
     def fit_pairwise(
         self, corpus: List[str], categories: Union[List[str], None] = None
@@ -576,7 +576,7 @@ class ClusterTopics:
 
         self.labels = np.argmax(cosine_similarity_matrix, axis=1)
 
-        self.text_labels = [self.cluster_categories[l] for l in self.labels]
+        self.text_labels = [self.cluster_categories[label] for label in self.labels]
 
         return (self.labels, self.text_labels)
 
@@ -621,6 +621,6 @@ class ClusterTopics:
         else:
             label_mapping = self.get_text_label_mapping(top_n=top_n)
 
-        self.text_labels = [label_mapping[l] for l in self.labels]
+        self.text_labels = [label_mapping[label] for label in self.labels]
 
         return (self.labels, self.text_labels)

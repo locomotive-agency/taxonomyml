@@ -1,23 +1,29 @@
 """Main module for taxonomy creation."""
 
-from typing import Union, List
-from collections import OrderedDict
+from typing import List, Union
+
 import pandas as pd
-from lib.searchconsole import load_gsc_account_data, load_available_gsc_accounts
-from lib.nlp import (
+from loguru import logger
+
+from taxonomyml import settings
+from taxonomyml.lib.api import get_openai_response_chat
+from taxonomyml.lib.clustering import ClusterTopics
+from taxonomyml.lib.nlp import (
     clean_gsc_dataframe,
     clean_provided_dataframe,
-    get_ngram_frequency,
-    merge_ngrams,
     filter_knee,
+    get_ngram_frequency,
     get_structure,
+    merge_ngrams,
 )
-from lib.api import get_openai_response_chat, APIError
-from lib.prompts import PROMPT_TEMPLATE_TAXONOMY, PROMPT_TEMPLATE_TAXONOMY_REVIEW
-from lib.utils import create_tuples
-from lib.clustering import ClusterTopics
-from loguru import logger
-import settings
+from taxonomyml.lib.prompts import (
+    PROMPT_TEMPLATE_TAXONOMY,
+    PROMPT_TEMPLATE_TAXONOMY_REVIEW,
+)
+from taxonomyml.lib.searchconsole import (
+    load_available_gsc_accounts,
+    load_gsc_account_data,
+)
 
 
 def get_data(
@@ -100,7 +106,9 @@ def get_data(
 
 
 def score_and_filter_df(
-    df: pd.DataFrame, ngram_range: tuple = (1, 6), min_df: int = 2,
+    df: pd.DataFrame,
+    ngram_range: tuple = (1, 6),
+    min_df: int = 2,
 ) -> pd.DataFrame:
     """Score and filter dataframe."""
 
@@ -145,15 +153,15 @@ def score_and_filter_df(
         return df_ngram
 
     df_knee = None
-    S = settings.MAX_SAMPLES
+    max_samples = settings.MAX_SAMPLES
 
     # Filter by knee
     while df_knee is None or len(df_knee) > settings.MAX_SAMPLES:
-        df_knee = filter_knee(df_ngram.copy(), col_name="score", S=S)
-        S -= 25
+        df_knee = filter_knee(df_ngram.copy(), col_name="score", knee_s=max_samples)
+        max_samples -= 25
 
     logger.info(
-        f"Filtered Knee (sensitivity={int(S+25)}). Dataframe shape: {df_knee.shape}"
+        f"Filtered Knee (sensitivity={int(max_samples + 25)}). Dataframe shape: {df_knee.shape}"
     )
 
     return df_knee
@@ -284,9 +292,9 @@ def add_categories(
     if "<outlier>" not in structure_map:
         structure_map["<outlier>"] = "Miscellaneous"
 
-
     model = ClusterTopics(
-        embedding_model=cluster_embeddings_model, cluster_categories=structure_parts,
+        embedding_model=cluster_embeddings_model,
+        cluster_categories=structure_parts,
     )
 
     if cross_encoded:

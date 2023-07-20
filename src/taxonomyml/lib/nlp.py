@@ -1,14 +1,12 @@
 """NLP functions for SEO."""
 
 from typing import List, Union
+
 import pandas as pd
-from sklearn.feature_extraction.text import CountVectorizer
-from tqdm import tqdm
-from nltk.util import ngrams
 from kneed import KneeLocator
 from loguru import logger
-
-import settings
+from nltk.util import ngrams
+from sklearn.feature_extraction.text import CountVectorizer
 
 
 def get_structure(text: str) -> List[str]:
@@ -44,13 +42,17 @@ def get_structure(text: str) -> List[str]:
     return result
 
 
-def plot_knee(df: pd.DataFrame, col_name: str = "score", S: int = 100):
+def plot_knee(df: pd.DataFrame, col_name: str = "score", knee_s: int = 100):
     """Plot line graph with knee locations marked with s=0 and s with provided value."""
 
     from matplotlib import pyplot as plt
 
     kneedle_given = KneeLocator(
-        range(1, len(df) + 1), df[col_name], curve="convex", direction="decreasing", S=S
+        range(1, len(df) + 1),
+        df[col_name],
+        curve="convex",
+        direction="decreasing",
+        S=knee_s,
     )
     kneedle_base = KneeLocator(
         range(1, len(df) + 1), df[col_name], curve="convex", direction="decreasing"
@@ -59,7 +61,9 @@ def plot_knee(df: pd.DataFrame, col_name: str = "score", S: int = 100):
     fig, ax = plt.subplots(figsize=(12, 8))
     ax.plot(df[col_name])
     ax.axvline(kneedle_base.knee, color="red", linestyle="--", label="knee")
-    ax.axvline(kneedle_given.knee, color="green", linestyle="--", label=f"knee (S={S})")
+    ax.axvline(
+        kneedle_given.knee, color="green", linestyle="--", label=f"knee (S={knee_s})"
+    )
 
     ax.set_title(f"Knee plot for {col_name}")
     ax.set_xlabel("ngram")
@@ -69,18 +73,22 @@ def plot_knee(df: pd.DataFrame, col_name: str = "score", S: int = 100):
 
 
 def filter_knee(
-    df: pd.DataFrame, col_name: str = "score", S: int = 100
+    df: pd.DataFrame, col_name: str = "score", knee_s: int = 100
 ) -> pd.DataFrame:
     """Filter dataframe to only include rows up to the knee."""
 
     kneedle = KneeLocator(
-        range(1, len(df) + 1), df[col_name], curve="convex", direction="decreasing", S=S
+        range(1, len(df) + 1),
+        df[col_name],
+        curve="convex",
+        direction="decreasing",
+        S=knee_s,
     )
 
     if kneedle.knee is None:
         return df
     else:
-        logger.info(f"Knee found at {kneedle.knee} with S={S}")
+        logger.info(f"Knee found at {kneedle.knee} with S={knee_s}")
 
     df_knee = df.iloc[: kneedle.knee]
 
@@ -253,7 +261,7 @@ def clean_provided_dataframe(
 
     # Ensure query is a string
     df["query"] = df["query"].astype(str)
-    
+
     df["original_query"] = df["query"].copy()
 
     if brand_terms:

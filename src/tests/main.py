@@ -1,6 +1,7 @@
-import pandas as pd
 import unittest
-from main import get_data
+
+import pandas as pd
+from taxonomyml.main import get_data
 
 
 class TestData(unittest.TestCase):

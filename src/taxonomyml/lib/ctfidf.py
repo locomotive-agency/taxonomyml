@@ -1,8 +1,8 @@
+import numpy as np
+import scipy.sparse as sp
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.preprocessing import normalize
 from sklearn.utils import check_array
-import numpy as np
-import scipy.sparse as sp
 
 
 class ClassTfidfTransformer(TfidfTransformer):
@@ -41,26 +41,26 @@ class ClassTfidfTransformer(TfidfTransformer):
         self.reduce_frequent_words = reduce_frequent_words
         super(ClassTfidfTransformer, self).__init__()
 
-    def fit(self, X: sp.csr_matrix, multiplier: np.ndarray = None):
+    def fit(self, matrix: sp.csr_matrix, multiplier: np.ndarray = None):
         """Learn the idf vector (global term weights).
 
         Arguments:
-            X: A matrix of term/token counts.
+            matrix: A matrix of term/token counts.
             multiplier: A multiplier for increasing/decreasing certain IDF scores
         """
-        X = check_array(X, accept_sparse=("csr", "csc"))
-        if not sp.issparse(X):
-            X = sp.csr_matrix(X)
+        matrix = check_array(matrix, accept_sparse=("csr", "csc"))
+        if not sp.issparse(matrix):
+            matrix = sp.csr_matrix(matrix)
         dtype = np.float64
 
         if self.use_idf:
-            _, n_features = X.shape
+            _, n_features = matrix.shape
 
             # Calculate the frequency of words across all classes
-            df = np.squeeze(np.asarray(X.sum(axis=0)))
+            df = np.squeeze(np.asarray(matrix.sum(axis=0)))
 
             # Calculate the average number of samples as regularization
-            avg_nr_samples = int(X.sum(axis=1).mean())
+            avg_nr_samples = int(matrix.sum(axis=1).mean())
 
             # BM25-inspired weighting procedure
             if self.bm25_weighting:
@@ -85,21 +85,21 @@ class ClassTfidfTransformer(TfidfTransformer):
 
         return self
 
-    def transform(self, X: sp.csr_matrix):
+    def transform(self, matrix: sp.csr_matrix):
         """Transform a count-based matrix to c-TF-IDF
 
         Arguments:
-            X (sparse matrix): A matrix of term/token counts.
+            matrix (sparse matrix): A matrix of term/token counts.
 
         Returns:
             X (sparse matrix): A c-TF-IDF matrix
         """
         if self.use_idf:
-            X = normalize(X, axis=1, norm="l1", copy=False)
+            matrix = normalize(matrix, axis=1, norm="l1", copy=False)
 
             if self.reduce_frequent_words:
-                X.data = np.sqrt(X.data)
+                matrix.data = np.sqrt(matrix.data)
 
-            X = X * self._idf_diag
+            matrix = matrix * self._idf_diag
 
-        return X
+        return matrix
