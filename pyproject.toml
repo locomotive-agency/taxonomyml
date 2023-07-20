@@ -3,9 +3,9 @@ name = "taxonomyml"
 version = "0.1.0"
 description = "Develop high-level website taxonomies from Search Console data or CSV files."
 license = "MIT"
-authors = ["JR Oakes <jroakes@gmail.com>"]
+authors = ["JR Oakes <jr.oakes@locomotive.agency>"]
 homepage = "https://locomotive.agency/"
-repository = "https://github.com/jroakes/Taxonomy"
+repository = "https://github.com/locomotive-agency/taxonomyml"
 readme = "README.md"
 
 [tool.poetry.dependencies]
@@ -29,6 +29,7 @@ umap-learn = "^0.5.3"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.7.0"
+pre-commit = "^3.3.3"
 
 [build-system]
 requires = ["poetry-core"]
