@@ -1,0 +1,22 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-toml
+    -   id: check-added-large-files
+    -   id: debug-statements
+    -   id: mixed-line-ending
+-   repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.5.1
+    hooks:
+    -   id: remove-crlf
+-   repo: https://github.com/psf/black
+    rev: 23.7.0
+    hooks:
+    -   id: black
+-   repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.0.277
+    hooks:
+    -   id: ruff
