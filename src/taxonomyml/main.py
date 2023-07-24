@@ -26,81 +26,82 @@ from taxonomyml.lib.searchconsole import (
 )
 
 
-def get_data(
-    data: Union[str, pd.DataFrame],
-    text_column: str = None,
-    search_volume_column: str = None,
+def get_gsc_data(
+    prop_url: str,
     days: int = 30,
     brand_terms: Union[List[str], None] = None,
     limit_queries: Union[int, None] = None,
-) -> pd.DataFrame:
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    df = load_gsc_account_data(prop_url, days)
+
+    if df is None:
+        df_accounts = load_available_gsc_accounts()
+        accounts = df_accounts[df_accounts["property"].str.contains(prop_url)][
+            "property"
+        ].tolist()
+        if len(accounts) == 0:
+            raise AttributeError(f"No GSC account found for: {prop_url}")
+        elif len(accounts) > 1:
+            logger.warning(f"Multiple accounts found. {', '.join(accounts)}.")
+            account = input("Which account would you like to use? ")
+            df = load_gsc_account_data(account, days)
+        else:
+            logger.info(f"GSC account found. Using: {accounts[0]}")
+            df = load_gsc_account_data(accounts[0], days)
+
+    # Save original dataframe
+    df_original = df.copy()
+
+    df = clean_gsc_dataframe(df, brand_terms, limit_queries)
+
+    return df, df_original
+
+
+def get_df_data(
+    data: Union[str, pd.DataFrame],
+    text_column: str = None,
+    search_volume_column: str = None,
+    brand_terms: Union[List[str], None] = None,
+    limit_queries: Union[int, None] = None,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Get data from Google Search Console or a pandas dataframe."""
 
-    df = pd.DataFrame()
-    df_original = pd.DataFrame()
-
-    if isinstance(data, str) and ("sc-domain:" in data or "https://" in data):
-        df = load_gsc_account_data(data, days)
-
-        if df is None:
-            df_accounts = load_available_gsc_accounts()
-            accounts = df_accounts[df_accounts["property"].str.contains(data)][
-                "property"
-            ].tolist()
-            if len(accounts) == 0:
-                raise AttributeError(f"No GSC account found for: {data}")
-            elif len(accounts) > 1:
-                logger.warning(f"Multiple accounts found. {', '.join(accounts)}.")
-                account = input("Which account would you like to use? ")
-                df = load_gsc_account_data(account, days)
-            else:
-                logger.info(f"GSC account found. Using: {accounts[0]}")
-                df = load_gsc_account_data(accounts[0], days)
-
-        df = clean_gsc_dataframe(df, brand_terms, limit_queries)
-
-    elif isinstance(data, pd.DataFrame) or isinstance(data, str) and (".csv" in data):
-        if isinstance(data, str) and (".csv" in data):
-            df = pd.read_csv(data)
-        else:
-            df = data
-
-        if text_column is None:
-            text_column = input("What is the name of the column with the queries? ")
-
-        if search_volume_column is None:
-            search_volume_column = input(
-                "What is the name of the column with the search volume? "
-            )
-
-        # Rename columns
-        df = df.rename(
-            columns={text_column: "query", search_volume_column: "search_volume"}
-        )
-
-        # Check if there is a column that contains URLs in the rows
-        url_columns = [
-            c
-            for c in df.columns
-            if df[c].dtype == "object" and df.head(10)[c].str.match(r"https?://").all()
-        ]
-
-        if len(url_columns) == 1:
-            logger.info(f"Found URL column: {url_columns[0]}.")
-            df = df.rename(columns={url_columns[0]: "page"})
-        else:
-            limit_queries = None
-
-        # Save original dataframe
-        df_original = df.copy()
-
-        # Clean
-        df = clean_provided_dataframe(df, brand_terms, limit_queries)
-
+    if isinstance(data, str) and (".csv" in data):
+        df = pd.read_csv(data)
     else:
-        raise ValueError(
-            "Data must be a GSC Property, CSV Filename, or pandas dataframe."
+        df = data
+
+    if text_column is None:
+        text_column = input("What is the name of the column with the queries? ")
+
+    if search_volume_column is None:
+        search_volume_column = input(
+            "What is the name of the column with the search volume? "
         )
+
+    # Rename columns
+    df = df.rename(
+        columns={text_column: "query", search_volume_column: "search_volume"}
+    )
+
+    # Check if there is a column that contains URLs in the rows
+    url_columns = [
+        c
+        for c in df.columns
+        if df[c].dtype == "object" and df.head(10)[c].str.match(r"https?://").all()
+    ]
+
+    if len(url_columns) == 1:
+        logger.info(f"Found URL column: {url_columns[0]}.")
+        df = df.rename(columns={url_columns[0]: "page"})
+    else:
+        limit_queries = None
+
+    # Save original dataframe
+    df_original = df.copy()
+
+    # Clean
+    df = clean_provided_dataframe(df, brand_terms, limit_queries)
 
     return df, df_original
 
@@ -212,14 +213,30 @@ def create_taxonomy(
     """
 
     # Get data
-    df, df_original = get_data(
-        data,
-        text_column,
-        search_volume_column,
-        days,
-        brand_terms,
-        limit_queries_per_page,
-    )
+    if isinstance(data, str) and ("sc-domain:" in data or "https://" in data):
+        df, df_original = get_gsc_data(
+            prop_url=data,
+            days=days,
+            brand_terms=brand_terms,
+            limit_queries=limit_queries_per_page,
+        )
+    elif (
+        isinstance(data, pd.DataFrame)
+        or isinstance(data, str)
+        and data.endswith(".csv")
+    ):
+        df, df_original = get_df_data(
+            data=data,
+            text_column=text_column,
+            search_volume_column=search_volume_column,
+            brand_terms=brand_terms,
+            limit_queries=limit_queries_per_page,
+        )
+    else:
+        raise ValueError(
+            "Data must be a GSC Property, CSV Filename, or pandas dataframe."
+        )
+
     logger.info(f"Got Data. Dataframe shape: {df.shape}")
 
     logger.info("Filtering Query Data.")
