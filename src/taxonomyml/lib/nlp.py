@@ -254,10 +254,8 @@ def clean_provided_dataframe(
     limit_queries: Union[int, None] = None,
 ) -> pd.DataFrame:
     # Remove other columns
-    if "page" in df.columns:
-        df = df[["query", "page", "search_volume"]].copy()
-    else:
-        df = df[["query", "search_volume"]].copy()
+    columns = [col for col in df.columns if col in {"query", "page", "search_volume"}]
+    df = df[columns].copy()
 
     # Ensure query is a string
     df["query"] = df["query"].astype(str)
