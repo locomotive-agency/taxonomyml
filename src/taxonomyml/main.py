@@ -188,6 +188,7 @@ def create_taxonomy(
     brand_terms: List[str] = None,
     limit_queries_per_page: int = 5,
     debug_responses: bool = False,
+    **kwargs,
 ):
     """Kickoff function to create taxonomy from GSC data.
 
@@ -271,6 +272,7 @@ def create_taxonomy(
         df,
         cluster_embeddings_model=cluster_embeddings_model,
         cross_encoded=cross_encoded,
+        **kwargs
     )
 
     logger.info("Done.")
@@ -287,7 +289,7 @@ def add_categories(
 ) -> pd.DataFrame:
     """Add categories to dataframe."""
     texts = df[match_col].tolist()
-    structure_parts = [" ".join(s.split(" > ")[-2:]) for s in structure]
+    structure_parts = [" ".join(s.split(" > ")) for s in structure]
     structure_map = {p: s for p, s in zip(structure_parts, structure)}
     if "<outlier>" not in structure_map:
         structure_map["<outlier>"] = "Miscellaneous"
@@ -298,7 +300,7 @@ def add_categories(
     )
 
     if cross_encoded:
-        _, text_labels = model.fit_pairwise_crossencoded(texts)
+        _, text_labels = model.fit_pairwise_crossencoded(texts, **kwargs)
     else:
         _, text_labels = model.fit_pairwise(texts)
 
@@ -320,7 +322,7 @@ def add_categories_clustered(
 ) -> pd.DataFrame:
     """Add categories to dataframe."""
     texts = df[match_col].tolist()
-    structure_parts = [" ".join(s.split(" > ")[-1:]) for s in structure]
+    structure_parts = [" ".join(s.split(" > ")) for s in structure]
     structure_map = {p: s for p, s in zip(structure_parts, structure)}
     if "<outliers>" not in structure_map:
         structure_map["<outliers>"] = "Miscellaneous"
@@ -332,8 +334,7 @@ def add_categories_clustered(
         reduction_dims=2,
         cluster_model="hdbscan",
         cluster_categories=structure_parts,
-        keep_outliers=True,
-        n_jobs=3,
+        keep_outliers=True
     )
 
     labels, text_labels = model.fit(texts)
