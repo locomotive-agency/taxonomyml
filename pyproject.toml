@@ -34,6 +34,10 @@ ruff = "^0.0.278"
 [tool.ruff]
 select = ["E", "F", "I", "N", "C90", "RUF200"]
 ignore = ["E501"]
+src = ["src"]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401", "E402"]
 
 [build-system]
 requires = ["poetry-core"]
