@@ -272,7 +272,7 @@ def create_taxonomy(
         df,
         cluster_embeddings_model=cluster_embeddings_model,
         cross_encoded=cross_encoded,
-        **kwargs
+        **kwargs,
     )
 
     logger.info("Done.")
@@ -286,6 +286,7 @@ def add_categories(
     cluster_embeddings_model: Union[str, None] = None,
     cross_encoded: bool = False,
     match_col: str = "query",
+    **kwargs,
 ) -> pd.DataFrame:
     """Add categories to dataframe."""
     texts = df[match_col].tolist()
@@ -334,7 +335,7 @@ def add_categories_clustered(
         reduction_dims=2,
         cluster_model="hdbscan",
         cluster_categories=structure_parts,
-        keep_outliers=True
+        keep_outliers=True,
     )
 
     labels, text_labels = model.fit(texts)
