@@ -27,12 +27,13 @@ from taxonomyml.lib.prompts import (
 
 
 def get_gsc_data(
+    gsc_client: gsc.GoogleSearchConsole,
     prop_url: str,
     days: int = 30,
     brand_terms: Union[List[str], None] = None,
     limit_queries: Union[int, None] = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    df = load_gsc_account_data(prop_url=prop_url, days=days)
+    df = load_gsc_account_data(gsc_client=gsc_client, prop_url=prop_url, days=days)
 
     # Save original dataframe
     df_original = df.copy()
@@ -201,6 +202,7 @@ def create_taxonomy(
     # Get data
     if isinstance(data, str) and ("sc-domain:" in data or "https://" in data):
         df, df_original = get_gsc_data(
+            gsc_client=gsc_client,
             prop_url=data,
             days=days,
             brand_terms=brand_terms,
