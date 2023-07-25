@@ -5,9 +5,10 @@ import pathlib
 from collections.abc import Sequence
 
 import googleapiclient.discovery
-import locomotive.api.google_apps.auth as auth
 import pandas as pd
-from locomotive import utils
+
+import taxonomyml.lib.gauth as auth
+from taxonomyml.lib import utils
 
 
 class GoogleSearchConsole:

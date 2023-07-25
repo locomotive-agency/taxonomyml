@@ -36,6 +36,7 @@ ruff = "^0.0.278"
 select = ["E", "F", "I", "N", "C90", "RUF200"]
 ignore = ["E501"]
 src = ["src"]
+fix = true
 
 [tool.ruff.per-file-ignores]
 "__init__.py" = ["F401", "E402"]
