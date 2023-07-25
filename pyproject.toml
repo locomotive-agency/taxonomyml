@@ -25,6 +25,7 @@ hdbscan = "^0.8.30"
 tiktoken = "^0.4.0"
 llvmlite = "0.40.1"
 umap-learn = "^0.5.3"
+torch = ">=2.0.0, !=2.0.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.7.0"
