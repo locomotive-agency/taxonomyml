@@ -57,14 +57,6 @@ def get_df_data(
     else:
         df = data
 
-    if text_column is None:
-        text_column = input("What is the name of the column with the queries? ")
-
-    if search_volume_column is None:
-        search_volume_column = input(
-            "What is the name of the column with the search volume? "
-        )
-
     # Rename columns
     df = df.rename(
         columns={text_column: "query", search_volume_column: "search_volume"}
