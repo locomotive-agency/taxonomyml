@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import datetime
 import glob
 import logging
 import os
 import re
+from collections.abc import Collection, Iterator
 from itertools import product
 from typing import List
 
@@ -78,3 +80,84 @@ def get_credentials_path(credentials_file: str) -> str:
         return os.path.abspath(matches[0])
     else:
         raise FileNotFoundError("Credentials file not found.")
+
+
+class DateRange(Collection):
+    """An iterable date range.
+
+    Attributes:
+        start: The earliest date of the range.
+        end: The latest date of the range
+
+    Usage:
+        date_range = DateRange('2023-02-01', '2023-02-28')
+        # or from a number of days in the past
+        date_range = DateRange.from_past_days(90)
+
+        # Iterate over the dates
+        for date in date_range:
+            print(date)
+
+        # Check for presence of a date
+        if '2022-04-05' in date_range:
+            print('Date is present in range.')
+
+        # Get the number of days (inclusive) in the range
+        range_length = len(date_range)
+    """
+
+    def __init__(self, start: str | datetime.date, end: str | datetime.date) -> None:
+        self._start = self._to_date_object(start)
+        self._end = self._to_date_object(end)
+        if self._start > self._end:
+            raise ValueError(
+                "The start date must be before or the same as the end date."
+            )
+
+    @classmethod
+    def from_past_days(cls, days: int, offset: int = 0) -> DateRange:
+        """Creates a DateRange instance for the past `n` days."""
+        today = datetime.date.today()
+        count_days = datetime.timedelta(days=abs(days))
+        offset_days = datetime.timedelta(days=offset)
+        return cls((today - count_days + offset_days), (today + offset_days))
+
+    @property
+    def start(self) -> datetime.date:
+        return self._start
+
+    @start.setter
+    def start(self, date: str | datetime.date) -> None:
+        self._start = self._to_date_object(date)
+
+    @property
+    def end(self) -> datetime.date:
+        return self._end
+
+    @end.setter
+    def end(self, date: str | datetime.date) -> None:
+        self._end = self._to_date_object(date)
+
+    @staticmethod
+    def _to_date_object(date: str | datetime.date) -> datetime.date:
+        """Converts an ISO date string to a datetime.date object."""
+        if isinstance(date, str):
+            return datetime.date.fromisoformat(date)
+        return date
+
+    def __contains__(self, comparison: str | datetime.date) -> bool:
+        return (
+            True
+            if self.start <= self._to_date_object(comparison) <= self.end
+            else False
+        )
+
+    def __iter__(self) -> Iterator[datetime.date]:
+        for n in range(self.start.toordinal(), self.end.toordinal() + 1):
+            yield datetime.date.fromordinal(n)
+
+    def __len__(self) -> int:
+        return (self.end.toordinal() - self.start.toordinal()) + 1
+
+    def __repr__(self) -> str:
+        return f"<{type(self).__name__}(start='{self.start}', " f"end='{self.end}')>"

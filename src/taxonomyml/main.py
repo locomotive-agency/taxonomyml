@@ -6,8 +6,12 @@ import pandas as pd
 from loguru import logger
 
 from taxonomyml import settings
+from taxonomyml.lib import gsc
 from taxonomyml.lib.api import get_openai_response_chat
 from taxonomyml.lib.clustering import ClusterTopics
+from taxonomyml.lib.gscutils import (
+    load_gsc_account_data,
+)
 from taxonomyml.lib.nlp import (
     clean_gsc_dataframe,
     clean_provided_dataframe,
@@ -20,10 +24,6 @@ from taxonomyml.lib.prompts import (
     PROMPT_TEMPLATE_TAXONOMY,
     PROMPT_TEMPLATE_TAXONOMY_REVIEW,
 )
-from taxonomyml.lib.searchconsole import (
-    load_available_gsc_accounts,
-    load_gsc_account_data,
-)
 
 
 def get_gsc_data(
@@ -32,22 +32,7 @@ def get_gsc_data(
     brand_terms: Union[List[str], None] = None,
     limit_queries: Union[int, None] = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    df = load_gsc_account_data(prop_url, days)
-
-    if df is None:
-        df_accounts = load_available_gsc_accounts()
-        accounts = df_accounts[df_accounts["property"].str.contains(prop_url)][
-            "property"
-        ].tolist()
-        if len(accounts) == 0:
-            raise AttributeError(f"No GSC account found for: {prop_url}")
-        elif len(accounts) > 1:
-            logger.warning(f"Multiple accounts found. {', '.join(accounts)}.")
-            account = input("Which account would you like to use? ")
-            df = load_gsc_account_data(account, days)
-        else:
-            logger.info(f"GSC account found. Using: {accounts[0]}")
-            df = load_gsc_account_data(accounts[0], days)
+    df = load_gsc_account_data(prop_url=prop_url, days=days)
 
     # Save original dataframe
     df_original = df.copy()
@@ -178,6 +163,7 @@ class PromptLengthError(Exception):
 
 def create_taxonomy(
     data: Union[str, pd.DataFrame],
+    gsc_client: gsc.GoogleSearchConsole | None = None,
     website_subject: str = "",
     text_column: str = None,
     search_volume_column: str = None,
