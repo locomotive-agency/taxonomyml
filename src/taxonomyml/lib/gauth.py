@@ -58,6 +58,8 @@ class GoogleOAuthManager(GoogleAuthManagerBase):
             scopes=self.scopes,
             redirect_uri=self.redirect_uri,
         )
+        self.code = None
+        self.token = None
         self._credentials = None
 
     @property
@@ -77,30 +79,28 @@ class GoogleOAuthManager(GoogleAuthManagerBase):
             prompt="consent", access_type="offline", include_granted_scopes="true"
         )
 
+    def fetch_token(self, code: str) -> None:
+        """Fetches the token from Google using the auth code."""
+        self.code = code
+        self.token = self.flow.fetch_token(code=code)
+
     def authorize(self) -> Credentials:
         """Authorizes access to Google and returns credentials.
-
-        Credentials can be serialized to a JSON file and reloaded as needed. A
-        refresh will be attempted for expired credentials. If the refresh
-        doesn't succeed, the authorization flow will be attempted again.
 
         Returns:
             A Credentials object that can be used with Google API client
             libraries.
         """
-        try:
-            creds = None
-            if self.credentials is not None:
-                creds = self.credentials
+        creds = None
+        if self.credentials is not None:
+            creds = self.credentials
 
-            if creds is None:
-                auth_url, state = self.get_auth_url()
+        if creds is None:
+            self.fetch_token(code=self.code)
+            creds = self.flow.credentials
 
-            if not creds.valid:
-                refresh_credentials(creds)
-        except google.auth.exceptions.RefreshError:
-            creds = self._run_flow()
-
+        if not creds.valid:
+            refresh_credentials(creds)
         self.credentials = creds
         return creds
 
