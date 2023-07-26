@@ -91,12 +91,9 @@ class GoogleOAuthManager(GoogleAuthManagerBase):
             A Credentials object that can be used with Google API client
             libraries.
         """
-        creds = None
         if self.credentials is not None:
             creds = self.credentials
-
-        if creds is None:
-            self.fetch_token(code=self.code)
+        else:
             creds = self.flow.credentials
 
         if not creds.valid:
