@@ -53,6 +53,11 @@ class GoogleOAuthManager(GoogleAuthManagerBase):
                 "token_uri": "https://accounts.google.com/o/oauth2/token",
             }
         }
+        self.flow = Flow.from_client_config(
+            self.app_config,
+            scopes=self.scopes,
+            redirect_uri=self.redirect_uri,
+        )
         self._credentials = None
 
     @property
@@ -63,18 +68,14 @@ class GoogleOAuthManager(GoogleAuthManagerBase):
     def credentials(self, creds: Credentials) -> None:
         self._credentials = creds
 
-    def _run_flow(self) -> Credentials:
-        """Runs the Flow to fetch credentials."""
-        flow = Flow.from_client_config(
-            self.app_config,
-            scopes=["https://www.googleapis.com/auth/webmasters.readonly"],
-            redirect_uri=self.redirect_uri,
-        )
+    def get_auth_url(self) -> tuple[str, str]:
+        """Returns the authorization URL for the flow.
 
-        auth_url, state = flow.authorization_url(
+        Tuple includes the auth URL and the state.
+        """
+        return self.flow.authorization_url(
             prompt="consent", access_type="offline", include_granted_scopes=True
         )
-        return flow
 
     def authorize(self) -> Credentials:
         """Authorizes access to Google and returns credentials.
@@ -93,11 +94,11 @@ class GoogleOAuthManager(GoogleAuthManagerBase):
                 creds = self.credentials
 
             if creds is None:
-                creds = self._run_flow()
+                auth_url, state = self.get_auth_url()
 
             if not creds.valid:
                 refresh_credentials(creds)
-        except (FileNotFoundError, google.auth.exceptions.RefreshError):
+        except google.auth.exceptions.RefreshError:
             creds = self._run_flow()
 
         self.credentials = creds
