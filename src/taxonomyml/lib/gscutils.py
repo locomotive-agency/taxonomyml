@@ -9,7 +9,10 @@ from taxonomyml.lib.utils import DateRange
 
 
 def load_gsc_account_data(
-    gsc_client: gsc.GoogleSearchConsole, prop_url: str, days: int
+    gsc_client: gsc.GoogleSearchConsole,
+    prop_url: str,
+    days: int,
+    max_rows: int = 100_000,
 ) -> pd.DataFrame:
     """Load GSC data into a pandas dataframe."""
     try:
@@ -20,7 +23,13 @@ def load_gsc_account_data(
     logger.info("Fetching data from GSC for: {}.", prop_url)
     dr = DateRange.from_past_days(days, offset=-2)
     try:
-        report = prop.query.date_range(dr).dimensions(["query", "page"]).get()
+        if max_rows > 100_000 or max_rows < 1:
+            max_rows = 100_000
+        report = (
+            prop.query.date_range(dr)
+            .dimensions(["query", "page"])
+            .get(max_rows=max_rows)
+        )
     except Exception:
         logger.exception(f"Error loading data for {prop_url}.")
         raise

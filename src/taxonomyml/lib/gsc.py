@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import pathlib
 from collections.abc import Sequence
+from typing import Optional
 
 import googleapiclient.discovery
 import pandas as pd
@@ -201,11 +202,15 @@ class AnalyticsQuery:
         )
         return response.get("rows", [])
 
-    def get(self) -> "AnalyticsReport":
+    def get(self, max_rows: Optional[int] = None) -> "AnalyticsReport":
         all_rows = []
         query = self.raw.copy()
         query["startRow"] = 0
         while True:
+            if max_rows:
+                if len(all_rows) >= max_rows:
+                    all_rows = all_rows[:max_rows]
+                    break
             rows = self.execute(body=query)
             if not rows:
                 break

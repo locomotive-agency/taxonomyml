@@ -49,13 +49,16 @@ def get_df_data(
     search_volume_column: str = None,
     brand_terms: Union[List[str], None] = None,
     limit_queries: Union[int, None] = None,
+    max_rows: int = 100_000,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Get data from Google Search Console or a pandas dataframe."""
+    if max_rows > 100_000 or max_rows < 1:
+        max_rows = 100_000
 
     if isinstance(data, str) and (".csv" in data):
-        df = pd.read_csv(data)
+        df = pd.read_csv(data, nrows=max_rows)
     else:
-        df = data
+        df = data.copy().head(max_rows)
 
     # Rename columns
     df = df.rename(
