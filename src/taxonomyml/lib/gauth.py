@@ -82,7 +82,7 @@ class GoogleOAuthManager(GoogleAuthManagerBase):
     def fetch_token(self, code: str) -> None:
         """Fetches the token from Google using the auth code."""
         self.code = code
-        self.token = self.flow.fetch_token(code=code)
+        self.flow.fetch_token(code=self.code)
 
     def authorize(self) -> Credentials:
         """Authorizes access to Google and returns credentials.
