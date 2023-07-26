@@ -74,7 +74,7 @@ class GoogleOAuthManager(GoogleAuthManagerBase):
         Tuple includes the auth URL and the state.
         """
         return self.flow.authorization_url(
-            prompt="consent", access_type="offline", include_granted_scopes=True
+            prompt="consent", access_type="offline", include_granted_scopes="true"
         )
 
     def authorize(self) -> Credentials:
