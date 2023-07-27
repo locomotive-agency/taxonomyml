@@ -65,8 +65,12 @@ def get_openai_response_chat(
     messages: List[dict] | str,
     model: str = settings.OPENAI_QUALITY_MODEL,
     system_message: dict | str = "You are an expert taxonomy creator.",
+    openai_api_key: str | None = None,
 ) -> Union[str, None]:
     """Get a response from OpenAI's chat API."""
+    if openai_api_key:
+        # Override the default API key
+        openai.api_key = openai_api_key
 
     system_message = {"role": "system", "content": system_message}
 
@@ -87,8 +91,12 @@ def get_openai_embeddings(
     texts: List[str],
     model: str = settings.OPENAI_EMBEDDING_MODEL,
     n_jobs: int = settings.MAX_WORKERS,
+    openai_api_key: str | None = None,
 ) -> np.ndarray:
     """Get embeddings from OpenAI's API."""
+    if openai_api_key:
+        # Override the default API key
+        openai.api_key = openai_api_key
 
     @retry(
         wait=wait_random_exponential(min=1, max=60),

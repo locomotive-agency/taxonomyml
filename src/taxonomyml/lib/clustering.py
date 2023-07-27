@@ -49,6 +49,7 @@ class ClusterTopics:
         use_elbow: bool = True,
         keep_outliers: bool = False,
         n_jobs: int = 6,
+        openai_api_key: str | None = None,
     ):
         """This class takes a list of sentences and clusters them using embeddings."""
 
@@ -76,6 +77,9 @@ class ClusterTopics:
         self.model = None
         self.model_data = None
         self.post_process = None
+        self.openai_api_key = (
+            openai_api_key if openai_api_key else settings.OPENAI_API_KEY
+        )
 
     def get_embeddings(self, sentences: List[str]) -> np.ndarray:
         """Converts text to embeddings"""
@@ -87,7 +91,9 @@ class ClusterTopics:
 
         # Need to build embeddings
         if self.embedding_model == "openai":
-            return get_openai_embeddings(sentences, n_jobs=self.n_jobs)
+            return get_openai_embeddings(
+                sentences, n_jobs=self.n_jobs, openai_api_key=self.openai_api_key
+            )
 
         else:
             logger.info("Using local embeddings")
@@ -450,7 +456,6 @@ class ClusterTopics:
         labels_idx = np.array([idx + offset for idx in labels_idx])
         self.labels[outliers_idx] = labels_idx
 
-
     def fit_pairwise_crossencoded(
         self,
         corpus: List[str],
@@ -460,14 +465,14 @@ class ClusterTopics:
         std_dev_threshold: float = 0.1,
     ) -> tuple:
         """Fits the model first pairwise using cosine_similarity and then using cross-encoder to top n categories
-        
+
         Args:
             corpus (List[str]): A list of sentences to cluster.
             categories (Union[List[str], None], optional): A list of categories to use for clustering. Defaults to None.
             top_n (int, optional): The number of categories to cross-encode. Defaults to 5.
             percentile_threshold (int, optional): The percentile threshold to use for good matches. Defaults to 50.
             std_dev_threshold (float, optional): The standard deviation threshold to use for good matches. Defaults to 0.1.
-            
+
         Returns:
             tuple: A tuple of the cluster labels and text labels.
         """
@@ -489,7 +494,9 @@ class ClusterTopics:
         category_embeddings = self.get_embeddings(self.cluster_categories)
 
         embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
-        category_embeddings = category_embeddings / np.linalg.norm(category_embeddings, axis=1, keepdims=True)
+        category_embeddings = category_embeddings / np.linalg.norm(
+            category_embeddings, axis=1, keepdims=True
+        )
 
         logger.info("Getting pairwise cosine similarity.")
         cosine_similarity_matrix = cosine_similarity(embeddings, category_embeddings)
@@ -498,7 +505,10 @@ class ClusterTopics:
         cross_encoder = CrossEncoder(settings.CROSSENCODER_MODEL_NAME)
 
         top_n_categories = [
-            [self.cluster_categories[x] for x in np.argsort(cosine_similarity_matrix[i])[-top_n:][::-1]]
+            [
+                self.cluster_categories[x]
+                for x in np.argsort(cosine_similarity_matrix[i])[-top_n:][::-1]
+            ]
             for i in range(len(corpus_array))
         ]
 
@@ -509,30 +519,36 @@ class ClusterTopics:
 
         cross_encoder_similarity = [
             cross_encoder.predict(pairs).flatten()
-            for pairs in tqdm(cross_encoder_pairs, desc="Getting cross-encoder similarity")
+            for pairs in tqdm(
+                cross_encoder_pairs, desc="Getting cross-encoder similarity"
+            )
         ]
 
         similarities_flattened = np.array(cross_encoder_similarity).flatten()
-        similarity_threshold = np.percentile(similarities_flattened, percentile_threshold)
+        similarity_threshold = np.percentile(
+            similarities_flattened, percentile_threshold
+        )
 
         logger.info(f"Similarity threshold: {similarity_threshold}")
 
         labels, text_labels = [], []
         for i, similarities in enumerate(cross_encoder_similarity):
-            
             most_similar = np.argmax(similarities)
             most_similar_score = similarities[most_similar]
             std_dev = np.std(similarities)
 
-            if most_similar_score >= similarity_threshold and std_dev >= std_dev_threshold:
+            if (
+                most_similar_score >= similarity_threshold
+                and std_dev >= std_dev_threshold
+            ):
                 # Good result since there is a score that is in the top percentile and the std dev is higher than the threshold
                 best_category = top_n_categories[i][most_similar]
                 labels.append(self.cluster_categories.index(best_category))
-                text_labels.append(best_category)            
+                text_labels.append(best_category)
             else:
                 labels.append(-1)
-                text_labels.append('<outlier>')
-        
+                text_labels.append("<outlier>")
+
         labels_match = []
         text_labels_match = []
 
@@ -546,7 +562,6 @@ class ClusterTopics:
         self.text_labels = text_labels_match
 
         return (self.labels, self.text_labels)
-
 
     def fit_pairwise(
         self, corpus: List[str], categories: Union[List[str], None] = None
@@ -594,7 +609,6 @@ class ClusterTopics:
         self.text_labels = [self.cluster_categories[label] for label in self.labels]
 
         return (self.labels, self.text_labels)
-
 
     def fit(self, corpus: List[str], top_n: int = 5) -> tuple:
         """This is the main fitting function that does all the work.

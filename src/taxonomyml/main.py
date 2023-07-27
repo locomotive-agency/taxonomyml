@@ -171,6 +171,7 @@ def create_taxonomy(
     brand_terms: List[str] = None,
     limit_queries_per_page: int = 5,
     debug_responses: bool = False,
+    openai_api_key: str | None = None,
     **kwargs,
 ):
     """Kickoff function to create taxonomy from GSC data.
@@ -188,7 +189,7 @@ def create_taxonomy(
         brand_terms (List[str], optional): List of brand terms to remove from queries. Defaults to None.
         limit_queries_per_page (int, optional): Number of queries to use for clustering. Defaults to 5.
         debug_responses (bool, optional): Whether to print debug responses. Defaults to False.
-
+        openai_api_key (str | None, optional): OpenAI API key. Defaults to environment variable OPENAI_API_KEY if not provided.
     Returns:
         structure, df, samples
         Tuple[List[str], pd.DataFrame, str: Taxonomy list, original dataframe, and query_data.
@@ -237,14 +238,16 @@ def create_taxonomy(
     )
 
     logger.info("Using OpenAI API.")
-    response = get_openai_response_chat(prompt, model=settings.OPENAI_LARGE_MODEL)
+    response = get_openai_response_chat(
+        prompt, model=settings.OPENAI_LARGE_MODEL, openai_api_key=openai_api_key
+    )
 
     logger.info("Reviewing OpenAI's work.")
     prompt = PROMPT_TEMPLATE_TAXONOMY_REVIEW.format(
         taxonomy=response, brands=brand_terms
     )
     reviewed_response = get_openai_response_chat(
-        prompt, model=settings.OPENAI_LARGE_MODEL
+        prompt, model=settings.OPENAI_LARGE_MODEL, openai_api_key=openai_api_key
     )
 
     if not response or not reviewed_response:
@@ -286,6 +289,7 @@ def add_categories(
     cluster_embeddings_model: Union[str, None] = None,
     cross_encoded: bool = False,
     match_col: str = "query",
+    openai_api_key: str | None = None,
     **kwargs,
 ) -> pd.DataFrame:
     """Add categories to dataframe."""
@@ -298,6 +302,7 @@ def add_categories(
     model = ClusterTopics(
         embedding_model=cluster_embeddings_model,
         cluster_categories=structure_parts,
+        openai_api_key=openai_api_key,
     )
 
     if cross_encoded:
@@ -320,6 +325,8 @@ def add_categories_clustered(
     min_cluster_size: int = 5,
     min_samples: int = 2,
     match_col: str = "query",
+    openai_api_key: str | None = None,
+    **kwargs,
 ) -> pd.DataFrame:
     """Add categories to dataframe."""
     texts = df[match_col].tolist()
@@ -336,6 +343,7 @@ def add_categories_clustered(
         cluster_model="hdbscan",
         cluster_categories=structure_parts,
         keep_outliers=True,
+        openai_api_key=openai_api_key,
     )
 
     labels, text_labels = model.fit(texts)
