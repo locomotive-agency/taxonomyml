@@ -16,21 +16,10 @@ from tenacity import (
 from tqdm import tqdm
 
 from taxonomyml import settings
+from taxonomyml.exceptions import APIError, OpenAIError
 
 # Set OpenAI API key
 openai.api_key = settings.OPENAI_API_KEY
-
-
-class APIError(Exception):
-    """Base class for API errors."""
-
-    pass
-
-
-class OpenAIError(APIError):
-    """Error for OpenAI API."""
-
-    pass
 
 
 @retry(
