@@ -563,52 +563,77 @@ class ClusterTopics:
 
         return (self.labels, self.text_labels)
 
+
     def fit_pairwise(
-        self, corpus: List[str], categories: Union[List[str], None] = None
-    ) -> tuple:
-        """This is the main fitting function that does all the work.
-
-        Args:
-            corpus (List[str]): A list of sentences to cluster.
-            top_n (int, optional): The number of ngrams to use for cluster labels. Defaults to 5.
-
-        Returns:
-            tuple: A tuple of the cluster labels and text labels."""
-
-        self.corpus = np.array(corpus)
-
-        logger.info("Getting embeddings.")
-        if self.embeddings is None:
-            self.embeddings = self.get_embeddings(self.corpus)
-
-        if categories:
-            self.cluster_categories = categories
-
-        if not self.cluster_categories:
-            raise ValueError(
-                "You must provide a list of cluster categories upon class intitiation to use this method."
+            self, corpus: List[str], categories: Union[List[str], None] = None,
+            percentile_threshold: int = 50,
+            std_dev_threshold: float = 0.1,
+        ) -> tuple:
+            """This is the main fitting function that does all the work.
+    
+            Args:
+                corpus (List[str]): A list of sentences to cluster.
+                categories (Union[List[str], None], optional): A list of categories to use for clustering.
+                percentile_threshold (int, optional): The percentile threshold to use for good matches. Defaults to 50.
+                std_dev_threshold (float, optional): The standard deviation threshold to use for good matches. Defaults to 0.1.
+    
+            Returns:
+                tuple: A tuple of the cluster labels and text labels."""
+    
+            self.corpus = np.array(corpus)
+    
+            logger.info("Getting embeddings.")
+            if self.embeddings is None:
+                self.embeddings = self.get_embeddings(self.corpus)
+    
+            if categories:
+                self.cluster_categories = categories
+    
+            if not self.cluster_categories:
+                raise ValueError(
+                    "You must provide a list of cluster categories upon class intitiation to use this method."
+                )
+    
+            category_embeddings = self.get_embeddings(self.cluster_categories)
+    
+            # Normalize embeddings for cosine similarity
+            self.embeddings = self.embeddings / np.linalg.norm(
+                self.embeddings, axis=1, keepdims=True
             )
-
-        category_embeddings = self.get_embeddings(self.cluster_categories)
-
-        # Normalize embeddings for cosine similarity
-        self.embeddings = self.embeddings / np.linalg.norm(
-            self.embeddings, axis=1, keepdims=True
-        )
-        category_embeddings = category_embeddings / np.linalg.norm(
-            category_embeddings, axis=1, keepdims=True
-        )
-
-        logger.info("Getting pairwise cosine similarity.")
-        cosine_similarity_matrix = cosine_similarity(
-            self.embeddings, category_embeddings
-        )
-
-        self.labels = np.argmax(cosine_similarity_matrix, axis=1)
-
-        self.text_labels = [self.cluster_categories[label] for label in self.labels]
-
-        return (self.labels, self.text_labels)
+            category_embeddings = category_embeddings / np.linalg.norm(
+                category_embeddings, axis=1, keepdims=True
+            )
+    
+            logger.info("Getting pairwise cosine similarity.")
+            cosine_similarity_matrix = cosine_similarity(
+                self.embeddings, category_embeddings
+            )
+    
+            similarity_threshold = np.percentile(
+                cosine_similarity_matrix, percentile_threshold
+            )
+            logger.info(f"Similarity threshold: {similarity_threshold}")
+    
+            self.labels = []
+            self.text_labels = []
+            for i, similarities in enumerate(cosine_similarity_matrix):
+                most_similar = np.argmax(similarities)
+                most_similar_score = similarities[most_similar]
+                std_dev = np.std(similarities)
+    
+                if (
+                    most_similar_score >= similarity_threshold
+                    and std_dev >= std_dev_threshold
+                ):
+                    # Good result, as the score is in the top percentile, and the std dev is higher than the threshold
+                    self.labels.append(most_similar)
+                    self.text_labels.append(self.cluster_categories[most_similar])
+                else:
+                    self.labels.append(-1)
+                    self.text_labels.append("<outlier>")
+    
+            return (self.labels, self.text_labels)
+        
 
     def fit(self, corpus: List[str], top_n: int = 5) -> tuple:
         """This is the main fitting function that does all the work.
