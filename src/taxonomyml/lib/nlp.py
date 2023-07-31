@@ -200,6 +200,13 @@ def get_ngram_frequency(
     # Keep only features with > 2 characters
     df_cv = df_cv[df_cv["feature"].str.len() > 2].copy()
 
+    # Remove features that are duplications of the same terms.
+    # e.g. "google google" or "google google google" should be combined with "google"
+    # Must retain the order of the terms in the feature
+    df_cv["feature"] = df_cv["feature"].apply(lambda x: " ".join(list(dict.fromkeys(x.split()))))
+
+    df_cv = df_cv.groupby("feature").sum().reset_index()   
+
     # Sort by frequency
     df_cv = df_cv.sort_values(by=["frequency"], ascending=False).reset_index(drop=True)
 
