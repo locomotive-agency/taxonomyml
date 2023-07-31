@@ -13,9 +13,9 @@ load_dotenv()
 MAX_WORKERS = 1
 
 # NLP
-CROSSENCODER_MODEL_NAME = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+CROSSENCODER_MODEL_NAME = "cross-encoder/ms-marco-MiniLM-L-12-v2"
 OPENAI_EMBEDDING_MODEL = "text-embedding-ada-002"
-LOCAL_EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+LOCAL_EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L12-v2"
 OPENAI_LARGE_MODEL = "gpt-3.5-turbo-16k"
 OPENAI_QUALITY_MODEL = "gpt-4"
 OPENAI_FAST_MODEL = "gpt-3.5-turbo"
