@@ -49,7 +49,7 @@ class ClusterTopics:
         use_elbow: bool = True,
         keep_outliers: bool = False,
         n_jobs: int = 6,
-        openai_api_key: str | None = None,
+        openai_api_key: Union[str, float] = None,
     ):
         """This class takes a list of sentences and clusters them using embeddings."""
 
