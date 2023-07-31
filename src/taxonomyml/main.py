@@ -308,7 +308,7 @@ def add_categories(
     if cross_encoded:
         _, text_labels = model.fit_pairwise_crossencoded(texts, **kwargs)
     else:
-        _, text_labels = model.fit_pairwise(texts)
+        _, text_labels = model.fit_pairwise(texts, **kwargs)
 
     label_lookup = {
         text: structure_map[label] for text, label in zip(texts, text_labels)
