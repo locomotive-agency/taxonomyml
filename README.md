@@ -1,51 +1,60 @@
 # Auto Taxonomy Creation
 
+Build a site taxonomy from a list of keywords, provided via CSV file upload, or by connecting to a Google Search Console property.
 
 ## Example with CSV
-```
-from main import create_taxonomy
+
+```python
+from taxonomyml import create_taxonomy
 
 filename = "domain_data.csv"
 brand_terms = ['brand', 'brand', 'brand']
 website_subject = "This website is about X"
 
-taxonomy, df, samples = create_taxonomy(filename,
-                                        text_column = "keyword",
-                                        search_volume_column = "search_volume",
-                                        website_subject = website_subject,
-                                        cross_encoded = True,
-                                        min_df = 5,
-                                        brand_terms = brand_terms)
+taxonomy, df, samples = create_taxonomy(
+    filename,
+    text_column="keyword",
+    search_volume_column="search_volume",
+    website_subject=website_subject,
+    cross_encoded=True,
+    min_df=5,
+    brand_terms=brand_terms
+)
 
 df.to_csv("taxonomy.csv", index=False)
-
-print("\n".join(taxonomy))
 ```
 
 ## Example with GSC
-```
-from main import create_taxonomy
+
+```python
+from taxonomyml import create_taxonomy
+from taxonomyml.lib import gsc, gauth
+
+auth_manager = gauth.GoogleServiceAccManager(
+    scopes=["https://www.googleapis.com/auth/webmasters.readonly"],
+    credentials_path="service_account.json",
+)
+gsc_client = gsc.GoogleSearchConsole(auth_manager=auth_manager)
 
 brand_terms = ["brand"]
-property = "sc-domain:domain.com"
 website_subject = "This website is about X"
+prop = "https://www.example.com/"
 
-taxonomy, df, samples = create_taxonomy(property,
-                                        days = 30,
-                                        website_subject = website_subject,
-                                        min_df = 2,
-                                        brand_terms = brand_terms,
-                                        limit_queries_per_page = 5)
-
+taxonomy, df, samples = create_taxonomy(
+    prop,
+    gsc_client=gsc_client,
+    days=30,
+    website_subject=website_subject,
+    min_df=2,
+    brand_terms=brand_terms,
+    limit_queries_per_page=5
+)
 
 df.to_csv("domain_taxonomy.csv", index=False)
-
-df.head()
 ```
 
-
-
 ### Parameters
+
 * `data` (Union[str, pd.DataFrame]): GSC Property, CSV Filename, or pandas dataframe.
 * `text_column` (str, optional): Name of the column with the queries. Defaults to None.
 * `search_volume_column` (str, optional): Name of the column with the search volume. Defaults to None.
@@ -59,4 +68,3 @@ df.head()
 * `limit_queries_per_page` (int, optional): Number of queries per page to use for clustering. Defaults to 5.
 * `debug_responses` (bool, optional): Whether to print debug responses. Defaults to False.
 * `openai_api_key` (str | None, optional): OpenAI API key. Defaults to environment variable OPENAI_API_KEY if not provided.
-
