@@ -33,7 +33,6 @@ SERVICE_ACCOUNT_SUBJECT = "clients@locomotive.agency"
 
 
 # Environment variables. Set these at the environment level to revealing secure details.
-try:
-    OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
-except KeyError as e:
-    logger.error("Environment variable not set: {}", str(e))
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    logger.warning("OPENAI_API_KEY not set.")
