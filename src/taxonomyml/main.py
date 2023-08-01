@@ -1,4 +1,5 @@
 """Main module for taxonomy creation."""
+from __future__ import annotations
 
 from typing import List, Union
 
@@ -172,6 +173,7 @@ def create_taxonomy(
     limit_queries_per_page: int = 5,
     debug_responses: bool = False,
     openai_api_key: str | None = None,
+    max_input_rows: int = 50_000,
     **kwargs,
 ):
     """Kickoff function to create taxonomy from GSC data.
@@ -221,6 +223,8 @@ def create_taxonomy(
             "Data must be a GSC Property, CSV Filename, or pandas dataframe."
         )
 
+    # Limit to 50k rows
+    df = df.head(max_input_rows)
     logger.info(f"Got Data. Dataframe shape: {df.shape}")
 
     logger.info("Filtering Query Data.")
