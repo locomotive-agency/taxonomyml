@@ -16,7 +16,7 @@ from tenacity import (
 from tqdm import tqdm
 
 from taxonomyml import settings
-from taxonomyml.exceptions import APIError, OpenAIError
+from taxonomyml.exceptions import APIError, MissingAPIKeyError, OpenAIError
 
 # Set OpenAI API key
 openai.api_key = settings.OPENAI_API_KEY
@@ -86,6 +86,8 @@ def get_openai_embeddings(
     if openai_api_key:
         # Override the default API key
         openai.api_key = openai_api_key
+    if not openai.api_key:
+        raise MissingAPIKeyError()
 
     @retry(
         wait=wait_random_exponential(min=1, max=60),

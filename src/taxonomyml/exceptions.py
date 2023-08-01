@@ -22,3 +22,10 @@ class OpenAIError(APIError):
     """Error for OpenAI API."""
 
     pass
+
+
+class MissingAPIKeyError(OpenAIError):
+    """Error for missing API key."""
+
+    def __init__(self) -> None:
+        super().__init__("OpenAI API key must be provided.")
