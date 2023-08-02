@@ -56,6 +56,37 @@ taxonomy, df, samples = create_taxonomy(
 df.to_csv("domain_taxonomy.csv", index=False)
 ```
 
+## Example with GSC (Service Account with Subject)
+
+```python
+import os
+from taxonomyml import create_taxonomy
+from taxonomyml.lib import gsc, gauth
+os.environ["OPENAI_API_KEY"] = "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+auth_manager = gauth.GoogleServiceAccManager(
+    scopes=["https://www.googleapis.com/auth/webmasters.readonly"],
+    credentials_path="service_account.json",
+    subject="emailuser@domain.com",
+)
+gsc_client = gsc.GoogleSearchConsole(auth_manager=auth_manager)
+
+brand_terms = ["brand"]
+website_subject = "This website is about X"
+prop = "https://www.example.com/"
+
+taxonomy, df, samples = create_taxonomy(
+    prop,
+    gsc_client=gsc_client,
+    days=30,
+    website_subject=website_subject,
+    brand_terms=brand_terms,
+)
+
+df.to_csv("domain_taxonomy.csv", index=False)
+```
+
+
 ### Parameters
 
 These are the most important parameters. If you are using a CSV, `search_volume_column` and `text_column` are required.
