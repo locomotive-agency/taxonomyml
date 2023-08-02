@@ -8,12 +8,13 @@ Build a site taxonomy from a list of keywords, provided via CSV file upload, or 
 
 ## Demo
 Try out a working Streamlit demo on Huggingface <a href="https://locomotive-taxonomy-ml.hf.space/" target="_blank">here</a>.
+
 Proudly open sourced by [Locomotive Agency](https://locomotive.agency/).
 
 <br/><br/>
 
 <p align="center">
-    <img width="600" height="auto" src="[https://picsum.photos/460/300](https://github.com/locomotive-agency/taxonomyml/assets/10191545/2524b7fb-516d-4a6e-a84d-3b557415ab01)">
+    <img width="600" height="auto" src="https://github.com/locomotive-agency/taxonomyml/assets/10191545/2524b7fb-516d-4a6e-a84d-3b557415ab01">
 </p>
 <br/><br/>
 
