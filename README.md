@@ -3,21 +3,20 @@
 Build a site taxonomy from a list of keywords, provided via CSV file upload, or by connecting to a Google Search Console property.  Uses OpenAI for taxonomy creation.
 
 ![Taxonomy ML](https://github.com/locomotive-agency/taxonomyml/blob/main/src/taxonomy-ml.png?raw=true)
-<br/><br/>
-
+<br/>
 
 
 ## Demo
 See a working Streamlit demo on Huggingface [here](https://locomotive-taxonomy-ml.hf.space/).
 
 Proudly open sourced by [Locomotive Agency](https://locomotive.agency/)
-<br/><br/>
+<br/>
 
 ## Installation
 ```
 pip install git+https://github.com/locomotive-agency/taxonomyml.git
 ```
-<br/><br/>
+<br/>
 
 ## Usage
 <br/>
@@ -44,7 +43,7 @@ taxonomy, df, samples = create_taxonomy(
 
 df.to_csv("taxonomy.csv", index=False)
 ```
-<br/><br/>
+<br/>
 
 ### Example with Search Console (GSC)
 
@@ -76,7 +75,7 @@ taxonomy, df, samples = create_taxonomy(
 
 df.to_csv("domain_taxonomy.csv", index=False)
 ```
-<br/><br/>
+<br/>
 
 ### Example with GSC (Service Account with Subject)
 
@@ -107,11 +106,13 @@ taxonomy, df, samples = create_taxonomy(
 
 df.to_csv("domain_taxonomy.csv", index=False)
 ```
-<br/><br/>
+<br/>
 
 ## Parameters
 <br/>
+
 ### Important
+
 These are the most important parameters. If you are using a CSV, `search_volume_column` and `text_column` are required.
 * `data` (Union[str, pd.DataFrame]): GSC Property, CSV Filename, or pandas dataframe.
 * `text_column` (str, optional): Name of the column with the queries. Defaults to None.
@@ -120,22 +121,28 @@ These are the most important parameters. If you are using a CSV, `search_volume_
 * `openai_api_key` (str | None, optional): OpenAI API key. Defaults to environment variable OPENAI_API_KEY if not provided.
 * `brand_terms` (List[str], optional): List of brand terms to remove from queries. Defaults to None.
 * `days` (int, optional): Number of days back to pull data from Search Console. Defaults to 30.
-<br/><br/>
+
+<br/>
+
 ### Taxonomy Fine-tuning
+
 These parameters allow you to fine-tune the selection of topics sent to OpenAI.
 * `ngram_range` (tuple, optional): Ngram range to use for scoring. Defaults to (1, 5).
 * `min_df` (int, optional): Minimum document frequency to use for scoring. Defaults to 5.
 * `limit_queries_per_page` (int, optional): Number of queries per page to use for clustering. Defaults to 5.
 * `debug_responses` (bool, optional): Whether to print debug responses. Defaults to False.
-<br/><br/>
+
+<br/>
+
 ### Matching Fine-tuning
+
 These parameters control the matching back of taxonomy categories to your original data.
 * `cluster_embeddings_model` (Union[str, None], optional): Name of the cluster embeddings model. Defaults to 'local'.
 * `cross_encoded` (bool, optional): Whether to use cross encoded matching. Defaults to False. Improves matching, but takes longer.
 * `percentile_threshold` (int, optional): The percentile threshold to use for good matches. Defaults to 50.
 * `std_dev_threshold` (float, optional): The standard deviation threshold to use for good matches. Defaults to 0.1.
-<br/><br/>
 
+<br/>
 
 ## Example of ClusterTopics
 ```
