@@ -2,6 +2,8 @@
 
 Build a site taxonomy from a list of keywords, provided via CSV file upload, or by connecting to a Google Search Console property.  Uses OpenAI for taxonomy creation.
 
+![Taxonomy ML](https://github.com/locomotive-agency/taxonomyml/blob/main/src/taxonomy-ml.png?raw=true)
+
 ## Example with CSV
 
 ```python
