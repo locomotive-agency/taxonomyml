@@ -10,7 +10,7 @@ Build a site taxonomy from a list of keywords, provided via CSV file upload, or 
 See a working Streamlit demo on Huggingface [here](https://locomotive-taxonomy-ml.hf.space/).
 
 Proudly open sourced by [Locomotive Agency](https://locomotive.agency/)
-<br/>
+<br/><br/>
 
 ## Installation
 ```
