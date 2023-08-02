@@ -14,7 +14,7 @@ Proudly open sourced by [Locomotive Agency](https://locomotive.agency/).
 <br/><br/>
 
 <p align="center">
-    <img width="600" height="auto" src="https://github.com/locomotive-agency/taxonomyml/assets/10191545/2524b7fb-516d-4a6e-a84d-3b557415ab01">
+    <img width="600" height="auto" alt="TaxonomyML Demo usage process" src="https://github.com/locomotive-agency/taxonomyml/blob/main/src/taxonomyml-process.gif?raw=true">
 </p>
 <br/><br/>
 
