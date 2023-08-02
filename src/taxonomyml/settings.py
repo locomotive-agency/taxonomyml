@@ -26,11 +26,6 @@ API_RETRY_ATTEMPTS = 5
 RANDOM_SEED = 42
 MAX_SAMPLES = 1000
 
-# Search Console Drive
-SERVICE_ACCOUNT_CREDENTIALS = "service.credentials.json"
-SERVICE_ACCOUNT_SCOPES = ["https://www.googleapis.com/auth/webmasters.readonly"]
-SERVICE_ACCOUNT_SUBJECT = "clients@locomotive.agency"
-
 
 # Environment variables. Set these at the environment level to revealing secure details.
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
