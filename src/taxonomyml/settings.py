@@ -24,7 +24,7 @@ CLUSTER_DESCRIPTION_MODEL = "gpt-3.5-turbo"
 OPENAI_REQUEST_TIMEOUT = 500
 API_RETRY_ATTEMPTS = 5
 RANDOM_SEED = 42
-MAX_SAMPLES = 1000
+MAX_SAMPLES = 800
 
 
 # Environment variables. Set these at the environment level to revealing secure details.
