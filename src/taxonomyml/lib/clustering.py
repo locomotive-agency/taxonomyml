@@ -619,7 +619,9 @@ class ClusterTopics:
             for i, similarities in enumerate(cosine_similarity_matrix):
                 most_similar = np.argmax(similarities)
                 most_similar_score = similarities[most_similar]
-                std_dev = np.std(similarities)
+
+                # Get the standard deviation of the top 10 scores
+                std_dev = np.std(np.sort(similarities)[-10:])
     
                 if (
                     most_similar_score >= similarity_threshold

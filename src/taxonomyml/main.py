@@ -132,20 +132,30 @@ def score_and_filter_df(
 
     if len(df_ngram) <= settings.MAX_SAMPLES:
         logger.info(f"Final score and filter length: {len(df_ngram)}")
-        print(df_ngram.head())
         return df_ngram
 
-    df_knee = None
-    max_samples = settings.MAX_SAMPLES
-
+    df_knee = df_ngram.copy()
+    sensitivity = settings.MAX_SAMPLES
+    increment = 20
+    
     # Filter by knee
-    while df_knee is None or len(df_knee) > settings.MAX_SAMPLES:
-        df_knee = filter_knee(df_ngram.copy(), col_name="score", knee_s=max_samples)
-        max_samples -= 25
+    while sensitivity >= 0 and len(df_knee) > settings.MAX_SAMPLES:
+        df_knee = filter_knee(df_ngram.copy(), col_name="score", knee_s=sensitivity)
+        sensitivity -= increment
 
-    logger.info(
-        f"Filtered Knee (sensitivity={int(max_samples + 25)}). Dataframe shape: {df_knee.shape}"
-    )
+    if len(df_knee) <= settings.MAX_SAMPLES:
+        logger.info(
+            f"Filtered Knee (sensitivity={int(sensitivity + increment)}). Dataframe shape: {df_knee.shape}"
+        )
+    else:
+        logger.warning(f"Warning: Could not filter by knee. Using top {settings.MAX_SAMPLES}.")
+        df_knee = df_ngram.head(settings.MAX_SAMPLES).copy()
+
+    if len(df_knee) < settings.MIN_SAMPLES:
+        logger.warning(f"Warning: Could not filter by knee. Using top {settings.MIN_SAMPLES}.")
+        df_knee = df_ngram.head(settings.MIN_SAMPLES).copy()
+
+    logger.info(f"Final score and filter length: {len(df_knee)}")
 
     return df_knee
 
