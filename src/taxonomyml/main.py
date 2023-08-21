@@ -33,8 +33,12 @@ def get_gsc_data(
     days: int = 30,
     brand_terms: Union[List[str], None] = None,
     limit_queries: Union[int, None] = None,
+    max_input_rows: Union[int, None] = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     df = load_gsc_account_data(gsc_client=gsc_client, prop_url=prop_url, days=days)
+
+    if max_input_rows:
+        df = df.head(max_input_rows)
 
     # Save original dataframe
     df_original = df.copy()
@@ -50,16 +54,18 @@ def get_df_data(
     search_volume_column: str = None,
     brand_terms: Union[List[str], None] = None,
     limit_queries: Union[int, None] = None,
-    max_rows: int = 100_000,
+    max_input_rows: Union[int, None] = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Get data from Google Search Console or a pandas dataframe."""
-    if max_rows > 100_000 or max_rows < 1:
-        max_rows = 100_000
 
     if isinstance(data, str) and (".csv" in data):
-        df = pd.read_csv(data, nrows=max_rows)
+        # Limit to 1M
+        df = pd.read_csv(data, nrows=1_000_000)
     else:
-        df = data.copy().head(max_rows)
+        df = data.copy()
+
+    if max_input_rows:
+        df = df.head(max_input_rows)
 
     # Rename columns
     df = df.rename(
@@ -215,6 +221,7 @@ def create_taxonomy(
             days=days,
             brand_terms=brand_terms,
             limit_queries=limit_queries_per_page,
+            max_input_rows=max_input_rows,
         )
     elif (
         isinstance(data, pd.DataFrame)
@@ -227,14 +234,13 @@ def create_taxonomy(
             search_volume_column=search_volume_column,
             brand_terms=brand_terms,
             limit_queries=limit_queries_per_page,
+            max_input_rows=max_input_rows,
         )
     else:
         raise ValueError(
             "Data must be a GSC Property, CSV Filename, or pandas dataframe."
         )
 
-    # Limit to 50k rows
-    df = df.head(max_input_rows)
     logger.info(f"Got Data. Dataframe shape: {df.shape}")
 
     logger.info("Filtering Query Data.")
