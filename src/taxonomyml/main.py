@@ -26,6 +26,8 @@ from taxonomyml.lib.prompts import (
     PROMPT_TEMPLATE_TAXONOMY_REVIEW,
 )
 
+logger.disable("taxonomyml")
+
 
 def get_gsc_data(
     gsc_client: gsc.GoogleSearchConsole,
@@ -143,7 +145,7 @@ def score_and_filter_df(
     df_knee = df_ngram.copy()
     sensitivity = settings.MAX_SAMPLES
     increment = 20
-    
+
     # Filter by knee
     while sensitivity >= 0 and len(df_knee) > settings.MAX_SAMPLES:
         df_knee = filter_knee(df_ngram.copy(), col_name="score", knee_s=sensitivity)
@@ -154,11 +156,15 @@ def score_and_filter_df(
             f"Filtered Knee (sensitivity={int(sensitivity + increment)}). Dataframe shape: {df_knee.shape}"
         )
     else:
-        logger.warning(f"Warning: Could not filter by knee. Using top {settings.MAX_SAMPLES}.")
+        logger.warning(
+            f"Warning: Could not filter by knee. Using top {settings.MAX_SAMPLES}."
+        )
         df_knee = df_ngram.head(settings.MAX_SAMPLES).copy()
 
     if len(df_knee) < settings.MIN_SAMPLES:
-        logger.warning(f"Warning: Could not filter by knee. Using top {settings.MIN_SAMPLES}.")
+        logger.warning(
+            f"Warning: Could not filter by knee. Using top {settings.MIN_SAMPLES}."
+        )
         df_knee = df_ngram.head(settings.MIN_SAMPLES).copy()
 
     logger.info(f"Final score and filter length: {len(df_knee)}")
