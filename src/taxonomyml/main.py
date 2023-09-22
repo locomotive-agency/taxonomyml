@@ -26,6 +26,8 @@ from taxonomyml.lib.prompts import (
     PROMPT_TEMPLATE_TAXONOMY_REVIEW,
 )
 
+logger.disable("taxonomyml")
+
 
 def get_gsc_data(
     gsc_client: gsc.GoogleSearchConsole,
