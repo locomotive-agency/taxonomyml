@@ -1,5 +1,6 @@
 """NLP functions for SEO."""
 
+import re
 from typing import List, Union
 
 import pandas as pd
@@ -203,9 +204,11 @@ def get_ngram_frequency(
     # Remove features that are duplications of the same terms.
     # e.g. "google google" or "google google google" should be combined with "google"
     # Must retain the order of the terms in the feature
-    df_cv["feature"] = df_cv["feature"].apply(lambda x: " ".join(list(dict.fromkeys(x.split()))))
+    df_cv["feature"] = df_cv["feature"].apply(
+        lambda x: " ".join(list(dict.fromkeys(x.split())))
+    )
 
-    df_cv = df_cv.groupby("feature").sum().reset_index()   
+    df_cv = df_cv.groupby("feature").sum().reset_index()
 
     # Sort by frequency
     df_cv = df_cv.sort_values(by=["frequency"], ascending=False).reset_index(drop=True)
@@ -237,13 +240,14 @@ def clean_gsc_dataframe(
     df = df.rename(columns={"impressions": "search_volume"})
 
     if brand_terms:
-        # Split brand into terms
+        # Lowercase and strip brand terms
         brand_terms = [b.lower().strip() for b in brand_terms]
-        df["query"] = df["query"].apply(
-            lambda x: " ".join(
-                [word for word in x.split(" ") if word.lower() not in (brand_terms)]
-            )
+        brand_terms.sort(key=len, reverse=True)
+        pattern = re.compile(
+            r"\b(?:" + "|".join(re.escape(term) for term in brand_terms) + r")\b"
         )
+        df["query"] = df["query"].str.replace(pattern, "")
+        df["query"] = df["query"].str.strip()
 
     # Sort by clicks and impressions descending
     df = df.sort_values(by=["clicks", "search_volume"], ascending=False)
@@ -270,13 +274,13 @@ def clean_provided_dataframe(
     df["original_query"] = df["query"].copy()
 
     if brand_terms:
-        # Split brand into terms
+        # Lowercase and strip brand terms
         brand_terms = [b.lower().strip() for b in brand_terms]
-        df.loc[:, "query"] = df["query"].apply(
-            lambda x: " ".join(
-                [word for word in x.split(" ") if word.lower() not in (brand_terms)]
-            )
+        brand_terms.sort(key=len, reverse=True)
+        pattern = re.compile(
+            r"\b(?:" + "|".join(re.escape(term) for term in brand_terms) + r")\b"
         )
+        df["query"] = df["query"].str.replace(pattern, "")
 
     # Remove non-english characters from query using regex: [^a-zA-Z0-9\s]
     df.loc[:, "query"] = df["query"].str.replace(r"[^a-zA-Z0-9\s]", "")
