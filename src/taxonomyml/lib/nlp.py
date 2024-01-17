@@ -228,7 +228,7 @@ def clean_gsc_dataframe(
     df["query"] = df["query"].str.lower()
 
     # Remove non-english characters from query
-    df["query"] = df["query"].str.replace(r"[^a-zA-Z0-9\s]", "")
+    df["query"] = df["query"].str.replace(r"[^a-zA-Z0-9\s]", "", regex=True)
 
     # Trim whitespace from query
     df["query"] = df["query"].str.strip()
@@ -246,7 +246,7 @@ def clean_gsc_dataframe(
         pattern = re.compile(
             r"\b(?:" + "|".join(re.escape(term) for term in brand_terms) + r")\b"
         )
-        df["query"] = df["query"].str.replace(pattern, "")
+        df["query"] = df["query"].str.replace(pattern, "", regex=True)
         df["query"] = df["query"].str.strip()
 
     # Sort by clicks and impressions descending
@@ -280,10 +280,10 @@ def clean_provided_dataframe(
         pattern = re.compile(
             r"\b(?:" + "|".join(re.escape(term) for term in brand_terms) + r")\b"
         )
-        df["query"] = df["query"].str.replace(pattern, "")
+        df["query"] = df["query"].str.replace(pattern, "", regex=True)
 
     # Remove non-english characters from query using regex: [^a-zA-Z0-9\s]
-    df.loc[:, "query"] = df["query"].str.replace(r"[^a-zA-Z0-9\s]", "")
+    df.loc[:, "query"] = df["query"].str.replace(r"[^a-zA-Z0-9\s]", "", regex=True)
 
     # Trim whitespace from query
     df.loc[:, "query"] = df["query"].str.strip()
