@@ -20,14 +20,14 @@ Please adhere to the following dash-prefix format for your output. The taxonomy 
     - Sub-subcategory
 
 In order to effectively accomplish this task, you MUST follow the following guidelines:
-* Brands: The Important Topics may mention these specific brands `{brands}`. When creating your taxonomy, please omit these brand terms. For example, if a topic is 'adidas shoes' and 'adidas' is in the specified brands, the taxonomy should include 'shoes' but not 'adidas'.
-* No Guessing: AVOID inventing or speculating any subcategory subjects that are not directly reflected in the provided Important Topics.
-* Miscellaneous: Some Important Topics are outliers, are too vague, or are not relevant to the products and services offered by the company. Assign these topics to a top-level category called 'Miscellaneous' e.g. Miscellaneous > Dogs (where all topics are related to shoes).
-* Depth of Taxonomy: The taxonomy should be no more than four levels deep (i.e., Category > Subcategory > Sub-subcategory > Sub-sub-subcategory). 
-* Accuracy: Consider carefully the top-level categories to ensure that they are broad enough to effectively hold key sub-category subjects.
-* Readability: Ensure that category names are concise yet descriptive.
-* Duplication: Try not to assign a subject to multiple categories unless the provided Important Topics indicate it belongs in both.
-* Output: Only output the taxonomy.  DO NOT include commentary.
+ - Brands: The Important Topics may mention these specific brands `{brands}`. When creating your taxonomy, please omit these brand terms. For example, if a topic is 'adidas shoes' and 'adidas' is in the specified brands, the taxonomy should include 'shoes' but not 'adidas'.
+ - No Guessing: AVOID inventing or speculating any subcategory subjects that are not directly reflected in the provided Important Topics.
+ - Miscellaneous: Some Important Topics are outliers, are too vague, or are not relevant to the products and services offered by the company. Assign these topics to a top-level category called 'Miscellaneous' e.g. Miscellaneous > Dogs (where all topics are related to shoes).
+ - Depth of Taxonomy: The taxonomy should be no more than four levels deep (i.e., Category > Subcategory > Sub-subcategory > Sub-sub-subcategory). 
+ - Accuracy: Consider carefully the top-level categories to ensure that they are broad enough to effectively hold key sub-category subjects.
+ - Readability: Ensure that category names are concise yet descriptive.
+ - Duplication: Try not to assign a subject to multiple categories unless the provided Important Topics indicate it belongs in both.
+ - Output: Only output the taxonomy.  DO NOT include commentary.
 
 Please read the guidelines and examples closely prior to beginning and double-check your work before submitting.
 
@@ -41,12 +41,12 @@ Here is the taxonomy that was created:
 
 Please review the taxonomy and make any necessary changes. If you believe that the taxonomy is correct, please submit it as is.
 
-Here are some guidelines for reviewing the taxonomy:
-* Remove any Miscellaneous sub-categories that are already assigned to other categories. For example, if there is a category called 'Nike > Shoes > NEO Vulc' and another category called 'Miscellaneous > Neo Vulc', please remove the 'Miscellaneous > Neo Vulc' category.
-* Make sure all category designations are accurate and appropriate.
-* Ensure that categories are not duplicated. For example, if there is a category called 'Nike > Shoes > NEO Vulc' and another category called 'Nike > Shoes > NEO  > NEO Vulc', please remove the 'Nike > Shoes > NEO Vulc' category as this topic is already covered in a more granular category.
-* Review the category names for readability. Ensure that category names are concise yet descriptive.
-* Output: Only output the taxonomy.  DO NOT include commentary.
+Follow the folliwng guidelines when reviewing this taxonomy:
+ - Remove any Miscellaneous sub-categories that are already assigned to other categories. For example, if there is a category called 'Nike > Shoes > NEO Vulc' and another category called 'Miscellaneous > Neo Vulc', please remove the 'Miscellaneous > Neo Vulc' category.
+ - Make sure all category designations are accurate and appropriate.
+ - Ensure that categories are not duplicated. For example, if there is a category called 'Nike > Shoes > NEO Vulc' and another category called 'Nike > Shoes > NEO  > NEO Vulc', please remove the 'Nike > Shoes > NEO Vulc' category as this topic is already covered in a more granular category.
+ - Review the category names for readability. Ensure that category names are concise yet descriptive.
+ - Output: Only output the taxonomy.  DO NOT include commentary.
 
 
 Keep the formatting of the original taxonomy. The taxonomy should be structured, as an example, as follows:
