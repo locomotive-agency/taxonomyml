@@ -27,7 +27,7 @@ openai.api_key = settings.OPENAI_API_KEY
     stop=stop_after_attempt(settings.API_RETRY_ATTEMPTS),
 )
 def get_openai_response(
-    messages: List[dict], model: str = "gpt-3.5-turbo"
+    messages: List[dict], model: str = "gpt-4o"
 ) -> Union[str, None]:
     """Get a response from OpenAI's API."""
 
